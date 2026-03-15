@@ -3,25 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <title>Редактировать контакт</title>
+    <style>
+        .flash-messages {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        .flash-message {
+            padding: 12px 18px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .flash-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        </style>
 </head>
 <body style="background-color: #f0f0f0; padding: 20px;">
 <body>
     <h1>Редактировать контакт</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class="flash-messages">
+                {% for category, message in messages %}
+                    <li class="flash-message flash-{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <table>
+        <tr>
+            <td>
+                <h2>
+                    Текущие данные
+                </h2>
+                                        
+                <table>
+                    <tr>
+                        <td><b>Имя:</b></td>
+                        <td>{{ contact[1] }}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Фамилия:</b></td>
+                        <td>{{ contact[2] }}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Телефон:</b></td>
+                        <td>{{ contact[3] }}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Заметка:</b></td>
+                        <td>{{ contact[4] }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
     
     <form action="/update/{{ contact[0] }}" method="POST">
         <input type="hidden" name="id" value="{{ contact[0] }}">
         
         <p>
             <label>Имя:</label><br>
-            <input type="text" name="name" value="" required>
+            <input type="text" name="name" value="">
         </p>
         <p>
             <label>Фамилия:</label><br>
-            <input type="text" name="surname" value="" required>
+            <input type="text" name="surname" value="">
         </p>
         <p>
             <label>Телефон:</label><br>
-            <input type="text" name="phone" value="" required>
+            <input type="text" name="phone" value="">
         </p>
         <p>
             <label>Заметка:</label><br>
@@ -32,7 +94,6 @@
             <a href="/">Отмена</a>
         </p>
     </form>
-    <a href="/">Вернуться к списку</a>
  
 </body>
 </html>

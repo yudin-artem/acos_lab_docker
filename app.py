@@ -3,29 +3,36 @@ import psycopg2
 import phonenumbers
 
 app = Flask(__name__)
+app.secret_key = 'secret_key'
 
 def get_db():
     return psycopg2.connect(
-        host="localhost",
+        host="postgres",
         database="phonebook",
         user="admin",
         password="admin"
     )
 
 def check_number(phone):
-    parsed_number = phonenumbers.parse(phone, None)
-    is_valid = phonenumbers.is_valid_number(parsed_number)
-    is_possible = phonenumbers.is_possible_number(parsed_number)
-    if not is_valid or not is_possible:
+    try:
+        parsed_number = phonenumbers.parse(phone, "RU")
+        is_valid = phonenumbers.is_valid_number(parsed_number)
+        is_possible = phonenumbers.is_possible_number(parsed_number)
+        if not is_valid or not is_possible:
+            flash('Invalid phone number', 'error')
+            return False
+        return True
+    except phonenumbers.NumberParseException as e:
+        flash(f'invalid phone number', 'error')
+    except Exception as e:
+        flash(f'unexpected problems: {e}', 'error')
         return False
-        flash('Invalid phone number')
-    return True
 
 @app.route('/')
 def index():
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT id, full_name, phone, note FROM contacts ORDER BY id")
+    cur.execute("SELECT id, name, surname, phone, note FROM contacts ORDER BY id")
     contacts = cur.fetchall()
     cur.close()
     conn.close()
@@ -52,18 +59,19 @@ def add():
 def edit(id):
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT id, full_name, phone, note FROM contacts WHERE id = %s", (id,))
+    cur.execute("SELECT id, name, surname, phone, note FROM contacts WHERE id = %s", (id,))
     contact = cur.fetchone()
     cur.close()
     conn.close()
     
     if contact is None:
-        return "Контакт не найден", 404
+        flash("Number not found!", 'error')
+        return redirect(url_for('edit'))
         
     return render_template('edit.html', contact=contact)
 
 @app.route('/update/<int:id>', methods=['POST'])
-def update():
+def update(id):
     id = request.form['id']
     name = request.form['name']
     surname = request.form['surname']
@@ -72,12 +80,12 @@ def update():
     conn = get_db()
     cur = conn.cursor()
     if name:
-        cur.execute("UPDATE contacts SET phone = %s WHERE id = %s", (name, id))
+        cur.execute("UPDATE contacts SET name = %s WHERE id = %s", (name, id))
     if surname:
-        cur.execute("UPDATE contacts SET phone = %s WHERE id = %s", (surname, id))
+        cur.execute("UPDATE contacts SET surname = %s WHERE id = %s", (surname, id))
     if phone:
         if not check_number(phone):
-            return redirect(url_for('index'))
+            return redirect(url_for('edit', id=id))
         cur.execute("UPDATE contacts SET phone = %s WHERE id = %s", (phone, id))
     if note:
         cur.execute("UPDATE contacts SET note = %s WHERE id = %s", (note, id))

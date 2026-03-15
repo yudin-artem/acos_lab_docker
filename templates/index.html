@@ -3,12 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <title>Телефонная книга</title>
+        <style>
+        .flash-messages {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        .flash-message {
+            padding: 12px 18px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .flash-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        </style>
 </head>
 <body style="background-color: #f0f0f0; padding: 20px;">
 <body>
     <h1>Телефонная книга</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class="flash-messages">
+                {% for category, message in messages %}
+                    <li class="flash-message flash-{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
     
-    <!-- Форма добавления -->
     <h2>Добавить контакт</h2>
     <form action="/add" method="POST">
         <p>
@@ -17,7 +49,7 @@
         </p>
         <p>
             <label>Фамилия:</label><br>
-            <input type="text" name="surname" required>
+            <input type="text" name="surname">
         </p>
         <p>
             <label>Телефон:</label><br>
@@ -32,7 +64,6 @@
     
     <hr>
     
-    <!-- Список контактов -->
     <h2>Список контактов</h2>
     
     <table border="1" cellpadding="8" cellspacing="0">
@@ -47,19 +78,19 @@
             </tr>
         </thead>
         <tbody>
-            
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>
-                    <a href="/edit/{{ contact[0] }}">[Редактировать]</a>
-                    <a href="/delete/{{ contact[0] }}" onclick="return confirm('Удалить?')">[Удалить]</a>
-                </td>
-            </tr>
-            
+                {% for contact in contacts %}
+                <tr>
+                    <td>{{ contact[0] }}</td>
+                    <td>{{ contact[1] }}</td>
+                    <td>{{ contact[2] }}</td>
+                    <td>{{ contact[3] }}</td>
+                    <td>{{ contact[4] or '' }}</td>
+                    <td>
+                        <a href="/edit/{{ contact[0] }}">[Редактировать]</a>
+                        <a href="/delete/{{ contact[0] }}" onclick="return confirm('Удалить?')">[Удалить]</a>
+                    </td>
+                </tr>
+                {% endfor %}
         </tbody>
     </table>
     
